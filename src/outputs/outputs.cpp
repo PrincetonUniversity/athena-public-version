@@ -222,6 +222,15 @@ Outputs::Outputs(Mesh *pm, ParameterInput *pin)
               << "is requested in output block '" << op.block_name << "'" << std::endl;
           throw std::runtime_error(msg.str().c_str());
 #endif
+        } else if (op.file_type.compare("netcdf") == 0) {
+#ifdef NETCDFOUTPUT
+          pnew_type = new NetcdfOutput(op);
+#else
+          msg << "### FATAL ERROR in Outputs constructor" << std::endl
+              << "Executable not configured for NETCDF outputs, but NETCDF file format "
+              << "is requested in output block '" << op.block_name << "'" << std::endl;
+          throw std::runtime_error(msg.str().c_str());
+#endif
         } else {
           msg << "### FATAL ERROR in Outputs constructor" << std::endl
               << "Unrecognized file format = '" << op.file_type 

@@ -130,6 +130,17 @@ public:
 };
 
 //----------------------------------------------------------------------------------------
+//! \class NetcdfOutput
+//  \brief derived OutputType class for Netcdf dumps
+
+class NetcdfOutput : public OutputType {
+public:
+  NetcdfOutput(OutputParameters oparams);
+  ~NetcdfOutput() {};
+  void WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag);
+};
+
+//----------------------------------------------------------------------------------------
 //! \class RestartOutput
 //  \brief derived OutputType class for restart dumps
 
