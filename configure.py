@@ -441,6 +441,7 @@ print('  Linker flags:            ' + makefile_options['LINKER_FLAGS'] + ' ' \
 print('  MPI parallelism:         ' + ('ON' if args['mpi'] else 'OFF'))
 print('  OpenMP parallelism:      ' + ('ON' if args['omp'] else 'OFF'))
 print('  HDF5 output:             ' + ('ON' if args['hdf5'] else 'OFF'))
+print('  NETCDF output:           ' + ('ON' if args['netcdf'] else 'OFF'))
 print('  Compiler:                ' + args['cxx'])
 print('  Compilation command:     ' + makefile_options['COMPILER_COMMAND'] + ' ' \
     + makefile_options['PREPROCESSOR_FLAGS'] + ' ' + makefile_options['COMPILER_FLAGS'])
