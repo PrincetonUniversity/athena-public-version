@@ -250,6 +250,7 @@ Mesh::Mesh(ParameterInput *pin, int mesh_test)
   UserSourceTerm_=NULL;
   UserTimeStep_=NULL;
 
+  // \note I don't undersand what's the meaning of current_level, cli
   // calculate the logical root level and maximum level
   for (root_level=0; (1<<root_level)<nbmax; root_level++);
   current_level=root_level;

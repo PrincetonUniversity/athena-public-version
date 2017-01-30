@@ -22,7 +22,9 @@
 #   -mpi              enable parallelization with MPI
 #   -omp              enable parallelization with OpenMP
 #   -hdf5             enable HDF5 output (requires the HDF5 library)
+#   -netcdf           enable NETCDF output (requires the NETCDF library)
 #   --hdf5_path=path  path to HDF5 libraries (requires the HDF5 library)
+#   --netcdf_path=path path to NETCDF libraries (requires the NETCDF library)
 #   --cxx=choice      use choice as the C++ compiler
 #   --ccmd=choice     use choice as the command to call the C++ compiler
 #---------------------------------------------------------------------------------------
@@ -131,11 +133,23 @@ parser.add_argument('-hdf5',
     default=False,
     help='enable HDF5 Output')
 
+# -netcdf argument
+parser.add_argument('-netcdf',
+    action='store_true',
+    default=False,
+    help='enable NETCDF Output')
+
 # --hdf5_path argument
 parser.add_argument('--hdf5_path',
     type=str,
     default='',
     help='path to HDF5 libraries')
+
+# --netcdf_path argument
+parser.add_argument('--netcdf_path',
+    type=str,
+    default='',
+    help='path to NETCDF libraries')
 
 # --cxx=[name] argument
 parser.add_argument('--cxx',
@@ -362,6 +376,17 @@ if args['hdf5']:
 else:
   definitions['HDF5_OPTION'] = 'NO_HDF5OUTPUT'
 
+# -netcdf argument
+if args['netcdf']:
+  definitions['NETCDF_OPTION'] = 'NETCDFOUTPUT'
+  if args['netcdf_path'] != '':
+    makefile_options['PREPROCESSOR_FLAGS'] += '-I%s/include' % args['netcdf_path']
+    makefile_options['LINKER_FLAGS'] += '-L%s/lib' % args['netcdf_path']
+  if args['cxx'] == 'g++' or args['cxx'] == 'icc' or args['cxx'] == 'cray':
+    makefile_options['LIBRARY_FLAGS'] += ' -lnetcdf'
+else:
+  definitions['NETCDF_OPTION'] = 'NO_NETCDFOUTPUT'
+
 # --ccmd=[name] argument
 if args['ccmd'] is not None:
   definitions['COMPILER_COMMAND'] = makefile_options['COMPILER_COMMAND'] = args['ccmd']
@@ -416,6 +441,7 @@ print('  Linker flags:            ' + makefile_options['LINKER_FLAGS'] + ' ' \
 print('  MPI parallelism:         ' + ('ON' if args['mpi'] else 'OFF'))
 print('  OpenMP parallelism:      ' + ('ON' if args['omp'] else 'OFF'))
 print('  HDF5 output:             ' + ('ON' if args['hdf5'] else 'OFF'))
+print('  NETCDF output:           ' + ('ON' if args['netcdf'] else 'OFF'))
 print('  Compiler:                ' + args['cxx'])
 print('  Compilation command:     ' + makefile_options['COMPILER_COMMAND'] + ' ' \
     + makefile_options['PREPROCESSOR_FLAGS'] + ' ' + makefile_options['COMPILER_FLAGS'])
