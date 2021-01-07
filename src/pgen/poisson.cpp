@@ -4,7 +4,7 @@
 // Licensed under the 3-clause BSD License, see LICENSE file for details
 //========================================================================================
 //! \file poisson.cpp
-//  \brief Problem generator to test Poisson's solver
+//! \brief Problem generator to test Poisson's solver
 
 // C headers
 
@@ -50,7 +50,6 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
   Real eps = pin->GetOrAddReal("problem","grav_eps", 0.0);
   SetFourPiG(four_pi_G);
   SetGravityThreshold(eps);
-  SetMeanDensity(0.0);
 }
 
 //========================================================================================
@@ -140,9 +139,10 @@ void MeshBlock::UserWorkInLoop() {
 //========================================================================================
 
 void Mesh::UserWorkAfterLoop(ParameterInput *pin) {
-  int is = pblock->is, ie = pblock->ie;
-  int js = pblock->js, je = pblock->je;
-  int ks = pblock->ks, ke = pblock->ke;
+  MeshBlock *pmb = my_blocks(0);
+  int is = pmb->is, ie = pmb->ie;
+  int js = pmb->js, je = pmb->je;
+  int ks = pmb->ks, ke = pmb->ke;
   int cnt = (ke-ks+1)*(je-js+1)*(ie-is+1);
 
   int nlim = pin->GetInteger("time","nlim");
@@ -163,10 +163,9 @@ void Mesh::UserWorkAfterLoop(ParameterInput *pin) {
 #endif
 
       for (int n=0; n < ncycle; n++) {
-        MeshBlock *pmb = pblock;
-        while (pmb != nullptr) {
+        for (int b=0; b<nblocal; ++b) {
+          pmb = my_blocks(b);
           std::memset(pmb->pgrav->phi.data(), 0, pmb->pgrav->phi.GetSizeInBytes());
-          pmb = pmb->next;
         }
         if (SELF_GRAVITY_ENABLED == 1) pfgrd->Solve(1,1);
         else if (SELF_GRAVITY_ENABLED == 2) pmgrd->Solve(1);
@@ -192,8 +191,8 @@ void Mesh::UserWorkAfterLoop(ParameterInput *pin) {
         std::cout << "Mesh configuration = " << mesh_size.nx1 << "x"
                   << mesh_size.nx2 << "x" << mesh_size.nx3 << std::endl;
         std::cout << "number of zones in MeshBlock = " << mb_zones << std::endl;
-        std::cout << "MeshBlock configuration = " << pblock->block_size.nx1 << "x"
-                  << pblock->block_size.nx2 << "x" << pblock->block_size.nx3 << std::endl;
+        std::cout << "MeshBlock configuration = " << pmb->block_size.nx1 << "x"
+                  << pmb->block_size.nx2 << "x" << pmb->block_size.nx3 << std::endl;
         std::cout << "number of processors = " << Globals::nranks << std::endl;
         std::cout << "processor configuration = "
                   << nrbx1 << "x" << nrbx2 << "x" << nrbx3 << std::endl;
@@ -213,8 +212,8 @@ void Mesh::UserWorkAfterLoop(ParameterInput *pin) {
       }
 
       Real err1 = 0.0, maxphi = 0.0; // err2 = 0.0
-      MeshBlock *pmb = pblock;
-      while (pmb != nullptr) {
+      for (int b=0; b<nblocal; ++b) {
+        pmb = my_blocks(b);
         Hydro *phydro = pmb->phydro;
         Gravity *pgrav = pmb->pgrav;
         for (int k=ks; k<=ke; ++k) {
@@ -226,7 +225,6 @@ void Mesh::UserWorkAfterLoop(ParameterInput *pin) {
             }
           }
         }
-        pmb = pmb->next;
       }
 #ifdef MPI_PARALLEL
       MPI_Allreduce(MPI_IN_PLACE, &err1, 1, MPI_ATHENA_REAL, MPI_SUM, MPI_COMM_WORLD);

@@ -6,7 +6,7 @@
 // Licensed under the 3-clause BSD License, see LICENSE file for details
 //========================================================================================
 //! \file mg_gravity.hpp
-//  \brief defines MGGravity class
+//! \brief defines MGGravity class
 
 // C headers
 
@@ -23,14 +23,20 @@ class Coordinates;
 class Multigrid;
 
 //! \class MGGravity
-//  \brief Multigrid gravity solver for each block
+//! \brief Multigrid gravity solver for each block
 
 class MGGravity : public Multigrid {
  public:
-  MGGravity(MultigridDriver *pmd, MeshBlock *pmb) : Multigrid(pmd, pmb, 1, 1)
-  { btype=BoundaryQuantity::mggrav; btypef=BoundaryQuantity::mggrav_f; };
-  void Smooth(int color) final;
-  void CalculateDefect() final;
+  MGGravity(MultigridDriver *pmd, MeshBlock *pmb);
+  ~MGGravity();
+
+  void Smooth(AthenaArray<Real> &dst, const AthenaArray<Real> &src,
+              int rlev, int il, int iu, int jl, int ju, int kl, int ku, int color) final;
+  void CalculateDefect(AthenaArray<Real> &def, const AthenaArray<Real> &u,
+                       const AthenaArray<Real> &src, int rlev,
+                       int il, int iu, int jl, int ju, int kl, int ku) final;
+  void CalculateFASRHS(AthenaArray<Real> &def, const AthenaArray<Real> &src,
+                       int rlev, int il, int iu, int jl, int ju, int kl, int ku) final;
 
  private:
   static constexpr Real omega_ = 1.15;
@@ -38,14 +44,15 @@ class MGGravity : public Multigrid {
 
 
 //! \class MGGravityDriver
-//  \brief Multigrid gravity solver
+//! \brief Multigrid gravity solver
 
-class MGGravityDriver : public MultigridDriver{
+class MGGravityDriver : public MultigridDriver {
  public:
   MGGravityDriver(Mesh *pm, ParameterInput *pin);
   ~MGGravityDriver();
   void Solve(int stage) final;
   // void SolveCoarsestGrid() final;
+  void ProlongateOctetBoundariesFluxCons(AthenaArray<Real> &dst) final;
  private:
   Real four_pi_G_;
 };

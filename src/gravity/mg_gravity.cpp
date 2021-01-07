@@ -4,11 +4,12 @@
 // Licensed under the 3-clause BSD License, see LICENSE file for details
 //========================================================================================
 //! \file mg_gravity.cpp
-//  \brief create multigrid solver for gravity
+//! \brief create multigrid solver for gravity
 
 // C headers
 
 // C++ headers
+#include <algorithm>
 #include <iostream>
 #include <sstream>    // sstream
 #include <stdexcept>  // runtime_error
@@ -34,7 +35,7 @@ class MeshBlock;
 
 //----------------------------------------------------------------------------------------
 //! \fn MGGravityDriver::MGGravityDriver(Mesh *pm, ParameterInput *pin)
-//  \brief MGGravityDriver constructor
+//! \brief MGGravityDriver constructor
 
 MGGravityDriver::MGGravityDriver(Mesh *pm, ParameterInput *pin)
     : MultigridDriver(pm, pm->MGGravityBoundaryFunction_, 1) {
@@ -43,30 +44,74 @@ MGGravityDriver::MGGravityDriver(Mesh *pm, ParameterInput *pin)
 
 //----------------------------------------------------------------------------------------
 //! \fn MGGravityDriver::~MGGravityDriver()
-//  \brief MGGravityDriver destructor
+//! \brief MGGravityDriver destructor
+
 MGGravityDriver::~MGGravityDriver() {
 }
 
+
+//----------------------------------------------------------------------------------------
+//! \fn MGGravity::MGGravity(MultigridDriver *pmd, MeshBlock *pmb)
+//! \brief MGGravity constructor
+
+MGGravity::MGGravity(MultigridDriver *pmd, MeshBlock *pmb) : Multigrid(pmd, pmb, 1, 1) {
+}
+
+
+//----------------------------------------------------------------------------------------
+//! \fn MGGravity::~MGGravity()
+//! \brief MGGravity deconstructor
+
+MGGravity::~MGGravity() {
+}
+
+
 //----------------------------------------------------------------------------------------
 //! \fn void MGGravityDriver::Solve(int stage)
-//  \brief load the data and solve
+//! \brief load the data and solve
 
 void MGGravityDriver::Solve(int stage) {
-  return;
 }
 
 
 //----------------------------------------------------------------------------------------
-//! \fn  void MGGravity::Smooth(int color)
-//  \brief Red-Black Gauss-Seidel Smoother
-void MGGravity::Smooth(int color) {
-  return;
+//! \fn  void MGGravity::Smooth(AthenaArray<Real> &u, const AthenaArray<Real> &src,
+//!           int rlev, int il, int iu, int jl, int ju, int kl, int ku, int color)
+//! \brief Implementation of the Red-Black Gauss-Seidel Smoother
+//!        rlev = relative level from the finest level of this Multigrid block
+
+void MGGravity::Smooth(AthenaArray<Real> &u, const AthenaArray<Real> &src, int rlev,
+                       int il, int iu, int jl, int ju, int kl, int ku, int color) {
 }
 
-//----------------------------------------------------------------------------------------
-//! \fn void MGGravity::CalculateDefect()
-//  \brief calculate the residual
 
-void MGGravity::CalculateDefect() {
-  return;
+//----------------------------------------------------------------------------------------
+//! \fn  void MGGravity::CalculateDefect(AthenaArray<Real> &def,
+//!                      const AthenaArray<Real> &u, const AthenaArray<Real> &src,
+//!                      int rlev, int il, int iu, int jl, int ju, int kl, int ku)
+//! \brief Implementation of the Defect calculation
+//!        rlev = relative level from the finest level of this Multigrid block
+
+void MGGravity::CalculateDefect(AthenaArray<Real> &def, const AthenaArray<Real> &u,
+                                const AthenaArray<Real> &src, int rlev,
+                                int il, int iu, int jl, int ju, int kl, int ku) {
+}
+
+
+//----------------------------------------------------------------------------------------
+//! \fn  void MGGravity::CalculateFASRHS(AthenaArray<Real> &src,
+//!  const AthenaArray<Real> &u, int rlev, int il, int iu, int jl, int ju, int kl, int ku)
+//! \brief Implementation of the RHS calculation for FAS
+//!        rlev = relative level from the finest level of this Multigrid block
+
+void MGGravity::CalculateFASRHS(AthenaArray<Real> &src, const AthenaArray<Real> &u,
+                         int rlev, int il, int iu, int jl, int ju, int kl, int ku) {
+}
+
+
+//----------------------------------------------------------------------------------------
+//! \fn void MGGravityDriver::ProlongateOctetBoundariesFluxCons(AthenaArray<Real> &dst)
+//! \brief prolongate octet boundaries using the flux conservation formula
+
+void MGGravityDriver::ProlongateOctetBoundariesFluxCons(AthenaArray<Real> &dst) {
 }

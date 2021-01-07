@@ -19,7 +19,6 @@
 #   -s                enable special relativity
 #   -g                enable general relativity
 #   -t                enable interface frame transformations for GR
-#   -shear            enable shearing periodic boundary conditions
 #   -debug            enable debug flags (-g -O0); override other compiler options
 #   -coverage         enable compiler-dependent code coverage flags
 #   -float            enable single precision (default is double)
@@ -30,7 +29,7 @@
 #   -fft              enable FFT (requires the FFTW library)
 #   --fftw_path=path  path to FFTW libraries (requires the FFTW library)
 #   --grav=xxx        use xxx as the self-gravity solver
-#   --cxx=xxx         use xxx as the C++ compiler
+#   --cxx=xxx         use xxx as the C++ compiler (works w/ or w/o -mpi)
 #   --ccmd=name       use name as the command to call the (non-MPI) C++ compiler
 #   --mpiccmd=name    use name as the command to call the MPI C++ compiler
 #   --gcovcmd=name    use name as the command to call the gcov utility
@@ -142,12 +141,6 @@ parser.add_argument('-t',
                     default=False,
                     help='enable interface frame transformations for GR')
 
-# -shear argument
-parser.add_argument('-shear',
-                    action='store_true',
-                    default=False,
-                    help='enable shearing box')
-
 # -debug argument
 parser.add_argument('-debug',
                     action='store_true',
@@ -181,7 +174,7 @@ parser.add_argument('-omp',
 # --grav=[name] argument
 parser.add_argument('--grav',
                     default='none',
-                    choices=['none', 'fft', 'mg'],
+                    choices=['none', 'fft'],
                     help='select self-gravity solver')
 
 # -fft argument
@@ -251,7 +244,7 @@ parser.add_argument(
     default='g++',
     type=c_to_cpp,
     choices=cxx_choices,
-    help='select C++ compiler and default set of flags')
+    help='select C++ compiler and default set of flags (works w/ or w/o -mpi)')
 
 # --ccmd=[name] argument
 parser.add_argument('--ccmd',
@@ -343,7 +336,7 @@ if args['eos'][:8] == 'general/':
     if args['s'] or args['g']:
         raise SystemExit('### CONFIGURE ERROR: '
                          + 'General EOS is incompatible with relativity')
-    if args['flux'] not in ['hllc', 'hlld', 'hlle']:
+    if args['flux'] not in ['hllc', 'hlld']:
         raise SystemExit('### CONFIGURE ERROR: '
                          + 'General EOS is incompatible with flux ' + args['flux'])
 
@@ -441,12 +434,6 @@ if args['g']:
     makefile_options['RSOLVER_FILE'] += '_rel'
     if not args['t']:
         makefile_options['RSOLVER_FILE'] += '_no_transform'
-
-# -shear argument
-if args['shear']:
-    definitions['SHEARING_BOX'] = '1'
-else:
-    definitions['SHEARING_BOX'] = '0'
 
 # --cxx=[name] argument
 if args['cxx'] == 'g++':
@@ -685,9 +672,6 @@ else:
             raise SystemExit(
                 '### CONFIGURE ERROR: FFT Poisson solver only be used with FFT')
 
-    if args['grav'] == "mg":
-        definitions['SELF_GRAVITY_ENABLED'] = '2'
-
 # -fft argument
 makefile_options['MPIFFT_FILE'] = ' '
 definitions['FFT_OPTION'] = 'NO_FFT'
@@ -804,7 +788,6 @@ print('  General relativity:         ' + ('ON' if args['g'] else 'OFF'))
 print('  Frame transformations:      ' + ('ON' if args['t'] else 'OFF'))
 print('  Self-Gravity:               ' + self_grav_string)
 print('  Super-Time-Stepping:        ' + ('ON' if args['sts'] else 'OFF'))
-print('  Shearing Box BCs:           ' + ('ON' if args['shear'] else 'OFF'))
 print('  Debug flags:                ' + ('ON' if args['debug'] else 'OFF'))
 print('  Code coverage flags:        ' + ('ON' if args['coverage'] else 'OFF'))
 print('  Linker flags:               ' + makefile_options['LINKER_FLAGS'] + ' '

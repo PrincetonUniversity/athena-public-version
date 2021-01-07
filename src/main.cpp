@@ -3,17 +3,17 @@
 // Copyright(C) 2014 James M. Stone <jmstone@princeton.edu> and other code contributors
 // Licensed under the 3-clause BSD License, see LICENSE file for details
 //========================================================================================
-/////////////////////////////////// Athena++ Main Program ////////////////////////////////
+//================================= Athena++ Main Program ================================
 //! \file main.cpp
-//  \brief Athena++ main program
-//
-// Based on the Athena MHD code (Cambridge version), originally written in 2002-2005 by
-// Jim Stone, Tom Gardiner, and Peter Teuben, with many important contributions by many
-// other developers after that, i.e. 2005-2014.
-//
-// Athena++ was started in Jan 2014.  The core design was finished during 4-7/2014 at the
-// KITP by Jim Stone.  GR was implemented by Chris White and AMR by Kengo Tomida during
-// 2014-2016.  Contributions from many others have continued to the present.
+//! \brief Athena++ main program
+//!
+//! Based on the Athena MHD code (Cambridge version), originally written in 2002-2005 by
+//! Jim Stone, Tom Gardiner, and Peter Teuben, with many important contributions by many
+//! other developers after that, i.e. 2005-2014.
+//!
+//! Athena++ was started in Jan 2014.  The core design was finished during 4-7/2014 at the
+//! KITP by Jim Stone.  GR was implemented by Chris White and AMR by Kengo Tomida during
+//! 2014-2016.  Contributions from many others have continued to the present.
 //========================================================================================
 
 // C headers
@@ -55,10 +55,10 @@
 
 //----------------------------------------------------------------------------------------
 //! \fn int main(int argc, char *argv[])
-//  \brief Athena++ main program
+//! \brief Athena++ main program
 
 int main(int argc, char *argv[]) {
-  std::string athena_version = "version 19.0 - August 2019";
+  std::string athena_version = "version 21.0 - January 2021";
   char *input_filename = nullptr, *restart_filename = nullptr;
   char *prundir = nullptr;
   int res_flag = 0;   // set to 1 if -r        argument is on cmdline
@@ -433,25 +433,44 @@ int main(int argc, char *argv[]) {
       pmesh->OutputCycleDiagnostics();
 
     if (STS_ENABLED) {
+      pmesh->sts_loc = TaskType::op_split_before;
       // compute nstages for this STS
-      Real my_dt = pmesh->dt;
-      Real dt_parabolic  = pmesh->dt_parabolic;
-      pststlist->nstages =
-          static_cast<int>(0.5*(-1. + std::sqrt(1. + 8.*my_dt/dt_parabolic))) + 1;
-
+      if (pmesh->sts_integrator == "rkl2") { // default
+        pststlist->nstages =
+            static_cast<int>
+              (0.5*(-1. + std::sqrt(9. + 16.*(0.5*pmesh->dt)/pmesh->dt_parabolic))) + 1;
+      } else { // rkl1
+        pststlist->nstages =
+            static_cast<int>
+              (0.5*(-1. + std::sqrt(1. + 8.*pmesh->dt/pmesh->dt_parabolic))) + 1;
+      }
+      if (pststlist->nstages % 2 == 0) { // guarantee odd nstages for STS
+        pststlist->nstages += 1;
+      }
       // take super-timestep
       for (int stage=1; stage<=pststlist->nstages; ++stage)
-        pststlist->DoTaskListOneStage(pmesh,stage);
+        pststlist->DoTaskListOneStage(pmesh, stage);
+
+      pmesh->sts_loc = TaskType::main_int;
     }
 
     if (pmesh->turb_flag > 1) pmesh->ptrbd->Driving(); // driven turbulence
 
     for (int stage=1; stage<=ptlist->nstages; ++stage) {
-      if (SELF_GRAVITY_ENABLED == 1) // fft (flag 0 for discrete kernel, 1 for continuous)
-        pmesh->pfgrd->Solve(stage, 0);
-      else if (SELF_GRAVITY_ENABLED == 2) // multigrid
-        pmesh->pmgrd->Solve(stage);
       ptlist->DoTaskListOneStage(pmesh, stage);
+      if (ptlist->CheckNextMainStage(stage)) {
+        if (SELF_GRAVITY_ENABLED == 1) // fft (0: discrete kernel, 1: continuous kernel)
+          pmesh->pfgrd->Solve(stage, 0);
+        else if (SELF_GRAVITY_ENABLED == 2) // multigrid
+          pmesh->pmgrd->Solve(stage);
+      }
+    }
+
+    if (STS_ENABLED && pmesh->sts_integrator == "rkl2") {
+      pmesh->sts_loc = TaskType::op_split_after;
+      // take super-timestep
+      for (int stage=1; stage<=pststlist->nstages; ++stage)
+        pststlist->DoTaskListOneStage(pmesh, stage);
     }
 
     pmesh->UserWorkInLoop();
@@ -464,6 +483,7 @@ int main(int argc, char *argv[]) {
     pmesh->LoadBalancingAndAdaptiveMeshRefinement(pinput);
 
     pmesh->NewTimeStep();
+
 #ifdef ENABLE_EXCEPTIONS
     try {
 #endif
@@ -557,8 +577,8 @@ int main(int argc, char *argv[]) {
     clock_t tstop = clock();
     double cpu_time = (tstop>tstart ? static_cast<double> (tstop-tstart) :
                        1.0)/static_cast<double> (CLOCKS_PER_SEC);
-    std::uint64_t zonecycles =
-        mbcnt*static_cast<std::uint64_t> (pmesh->pblock->GetNumberOfMeshBlockCells());
+    std::uint64_t zonecycles = mbcnt
+      *static_cast<std::uint64_t> (pmesh->my_blocks(0)->GetNumberOfMeshBlockCells());
     double zc_cpus = static_cast<double> (zonecycles) / cpu_time;
 
     std::cout << std::endl << "zone-cycles = " << zonecycles << std::endl;

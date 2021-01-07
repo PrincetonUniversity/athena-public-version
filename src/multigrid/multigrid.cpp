@@ -1,14 +1,17 @@
 //========================================================================================
+// Athena++ astrophysical MHD code
 // Copyright(C) 2014 James M. Stone <jmstone@princeton.edu> and other code contributors
 // Licensed under the 3-clause BSD License, see LICENSE file for details
 //========================================================================================
+//! \file multigrid.cpp
+//  \brief implementation of the functions commonly used in Multigrid
 
 // C headers
 
 // C++ headers
 #include <algorithm>
 #include <cmath>
-#include <cstring>    // memset
+#include <cstring>    // memset, memcpy
 #include <iostream>
 #include <sstream>    // stringstream
 #include <stdexcept>  // runtime_error
@@ -26,7 +29,8 @@
 //! \fn Multigrid::Multigrid(MultigridDriver *pmd, MeshBlock *pmb, int invar, int nghost)
 //  \brief Multigrid constructor
 
-Multigrid::Multigrid(MultigridDriver *pmd, MeshBlock *pmb, int invar, int nghost) {
+Multigrid::Multigrid(MultigridDriver *pmd, MeshBlock *pmb, int invar, int nghost) :
+  pmy_driver_(pmd), pmy_block_(pmb), ngh_(nghost), nvar_(invar), defscale_(1.0) {
 }
 
 
@@ -41,8 +45,8 @@ Multigrid::~Multigrid() {
 //----------------------------------------------------------------------------------------
 //! \fn void Multigrid::LoadFinestData(const AthenaArray<Real> &src, int ns, int ngh)
 //  \brief Fill the inital guess in the active zone of the finest level
+
 void Multigrid::LoadFinestData(const AthenaArray<Real> &src, int ns, int ngh) {
-  return;
 }
 
 
@@ -50,8 +54,8 @@ void Multigrid::LoadFinestData(const AthenaArray<Real> &src, int ns, int ngh) {
 //! \fn void Multigrid::LoadSource(const AthenaArray<Real> &src, int ns, int ngh,
 //                                 Real fac)
 //  \brief Fill the source in the active zone of the finest level
+
 void Multigrid::LoadSource(const AthenaArray<Real> &src, int ns, int ngh, Real fac) {
-  return;
 }
 
 
@@ -60,159 +64,170 @@ void Multigrid::LoadSource(const AthenaArray<Real> &src, int ns, int ngh, Real f
 //  \brief restrict the source through all the multigrid levels
 
 void Multigrid::RestrictFMGSource() {
-  return;
 }
+
 
 //----------------------------------------------------------------------------------------
 //! \fn void Multigrid::RetrieveResult(AthenaArray<Real> &dst, int ns, int ngh)
 //  \brief Set the result, including the ghost zone
+
 void Multigrid::RetrieveResult(AthenaArray<Real> &dst, int ns, int ngh) {
-  return;
+}
+
+
+//----------------------------------------------------------------------------------------
+//! \fn void Multigrid::RetrieveDefect(AthenaArray<Real> &dst, int ns, int ngh)
+//  \brief Set the defect, including the ghost zone
+
+void Multigrid::RetrieveDefect(AthenaArray<Real> &dst, int ns, int ngh) {
 }
 
 
 //----------------------------------------------------------------------------------------
 //! \fn void Multigrid::ZeroClearData()
 //  \brief Clear the data array with zero
+
 void Multigrid::ZeroClearData() {
-  return;
 }
 
 
 //----------------------------------------------------------------------------------------
-//! \fn void Multigrid::Restrict()
+//! \fn void Multigrid::RestrictBlock()
 //  \brief Restrict the defect to the source
-void Multigrid::Restrict() {
-  return;
+
+void Multigrid::RestrictBlock() {
 }
 
 
 //----------------------------------------------------------------------------------------
-//! \fn void Multigrid::ProlongateAndCorrect()
+//! \fn void Multigrid::ProlongateAndCorrectBlock()
 //  \brief Prolongate the potential using tri-linear interpolation
-void Multigrid::ProlongateAndCorrect() {
-  return;
+
+void Multigrid::ProlongateAndCorrectBlock() {
 }
 
 
 //----------------------------------------------------------------------------------------
-//! \fn void Multigrid::FMGProlongate()
+//! \fn void Multigrid::FMGProlongateBlock()
 //  \brief Prolongate the potential for Full Multigrid cycle
-void Multigrid::FMGProlongate() {
-  return;
+
+void Multigrid::FMGProlongateBlock() {
 }
 
 
 //----------------------------------------------------------------------------------------
-//! \fn void Multigrid::SetFromRootGrid(AthenaArray<Real> &src, int ci, int cj, int ck)
-//  \brief Load the data from the root grid
-void Multigrid::SetFromRootGrid(AthenaArray<Real> &src, int ci, int cj, int ck) {
-  return;
+//! \fn  void Multigrid::SmoothBlock(int color)
+//  \brief Apply Smoother on the Block
+
+void Multigrid::SmoothBlock(int color) {
 }
 
 
+//----------------------------------------------------------------------------------------
+//! \fn void Multigrid::CalculateDefectBlock()
+//  \brief calculate the residual
+
+void Multigrid::CalculateDefectBlock() {
+}
 
 
 //----------------------------------------------------------------------------------------
-//! \fn Real Multigrid::CalculateDefectNorm(int n, int nrm)
+//! \fn void Multigrid::CalculateFASRHSBlock()
+//  \brief calculate the RHS for the Full Approximation Scheme
+
+void Multigrid::CalculateFASRHSBlock() {
+}
+
+
+//----------------------------------------------------------------------------------------
+//! \fn void Multigrid::SetFromRootGrid(bool folddata)
+//  \brief Load the data from the root grid or octets
+
+void Multigrid::SetFromRootGrid(bool folddata) {
+}
+
+
+//----------------------------------------------------------------------------------------
+//! \fn Real Multigrid::CalculateDefectNorm(MGNormType nrm, int n)
 //  \brief calculate the residual norm
 
-Real Multigrid::CalculateDefectNorm(int n, int nrm) {
+Real Multigrid::CalculateDefectNorm(MGNormType nrm, int n) {
   return 0.0;
 }
 
 
 //----------------------------------------------------------------------------------------
-//! \fn Real Multigrid::CalculateTotal(int type, int n)
+//! \fn Real Multigrid::CalculateTotal(MGVariable type, int n)
 //  \brief calculate the sum of the array (type: 0=src, 1=u)
 
-Real Multigrid::CalculateTotal(int type, int n) {
+Real Multigrid::CalculateTotal(MGVariable type, int n) {
   return 0.0;
 }
 
 
 //----------------------------------------------------------------------------------------
-//! \fn Real Multigrid::SubtractAverage(int type, int n, Real ave)
-//  \brief subtract the average value (type: 0=source, 1=u)
+//! \fn Real Multigrid::SubtractAverage(MGVariable type, int v, Real ave)
+//  \brief subtract the average value (type: 0=src, 1=u)
 
-void Multigrid::SubtractAverage(int type, int n, Real ave) {
+void Multigrid::SubtractAverage(MGVariable type, int n, Real ave) {
+}
+
+
+//----------------------------------------------------------------------------------------
+//! \fn void Multigrid::StoreOldData()
+//  \brief store the old u data in the uold array
+
+void Multigrid::StoreOldData() {
+}
+
+
+//----------------------------------------------------------------------------------------
+//! \fn Real Multigrid::GetCoarsestData(MGVariable type, int n)
+//  \brief get the value on the coarsest level in the MG block (type: 0=src, 1=u)
+
+Real Multigrid::GetCoarsestData(MGVariable type, int n) {
+  return 0.0;
+}
+
+
+//----------------------------------------------------------------------------------------
+//! \fn void Multigrid::SetData(MGVariable type, int n, int k, int j, int i, Real v)
+//  \brief set a value to a cell on the current level
+
+void Multigrid::SetData(MGVariable type, int n, int k, int j, int i, Real v) {
   return;
 }
 
 
 //----------------------------------------------------------------------------------------
-//! \fn MGPeriodicInnerX1(AthenaArray<Real> &dst,Real time, int nvar,
-//                int is, int ie, int js, int je, int ks, int ke, int ngh,
-//                Real x0, Real y0, Real z0, Real dx, Real dy, Real dz)
-//  \brief Periodic (default) boundary condition in the inner-X1 direction
+//! \fn void Multigrid::Restrict(AthenaArray<Real> &dst, const AthenaArray<Real> &src,
+//                               int il, int iu, int jl, int ju, int kl, int ku)
+//  \brief Actual implementation of prolongation and correction
 
-void MGPeriodicInnerX1(AthenaArray<Real> &dst,Real time, int nvar,
-                       int is, int ie, int js, int je, int ks, int ke, int ngh,
-                       Real x0, Real y0, Real z0, Real dx, Real dy, Real dz) {
-  return;
+void Multigrid::Restrict(AthenaArray<Real> &dst, const AthenaArray<Real> &src,
+                         int il, int iu, int jl, int ju, int kl, int ku) {
 }
 
 
 //----------------------------------------------------------------------------------------
-//! \fn MGPeriodicOuterX1(AthenaArray<Real> &dst,Real time, int nvar,
-//                int is, int ie, int js, int je, int ks, int ke, int ngh,
-//                Real x0, Real y0, Real z0, Real dx, Real dy, Real dz)
-//  \brief Periodic (default) boundary condition in the outer-X1 direction
+//! \fn void Multigrid::ProlongateAndCorrect(AthenaArray<Real> &dst,
+//      const AthenaArray<Real> &src, int il, int iu, int jl, int ju, int kl, int ku,
+//      int fil, int fjl, int fkl)
+//  \brief Actual implementation of prolongation and correction
 
-void MGPeriodicOuterX1(AthenaArray<Real> &dst,Real time, int nvar,
-                       int is, int ie, int js, int je, int ks, int ke, int ngh,
-                       Real x0, Real y0, Real z0, Real dx, Real dy, Real dz) {
-  return;
+void Multigrid::ProlongateAndCorrect(AthenaArray<Real> &dst, const AthenaArray<Real> &src,
+     int il, int iu, int jl, int ju, int kl, int ku, int fil, int fjl, int fkl) {
 }
 
 
 //----------------------------------------------------------------------------------------
-//! \fn MGPeriodicInnerX2(AthenaArray<Real> &dst,Real time, int nvar,
-//                int is, int ie, int js, int je, int ks, int ke, int ngh,
-//                Real x0, Real y0, Real z0, Real dx, Real dy, Real dz)
-//  \brief Periodic (default) boundary condition in the inner-X2 direction
+//! \fn void Multigrid::FMGProlongate(AthenaArray<Real> &dst,
+//           const AthenaArray<Real> &src, int il, int iu, int jl, int ju, int kl, int ku
+//           int fil, int fjl, int fkl)
+//  \brief Actual implementation of FMG prolongation
 
-void MGPeriodicInnerX2(AthenaArray<Real> &dst,Real time, int nvar,
-                       int is, int ie, int js, int je, int ks, int ke, int ngh,
-                       Real x0, Real y0, Real z0, Real dx, Real dy, Real dz) {
-  return;
+void Multigrid::FMGProlongate(AthenaArray<Real> &dst, const AthenaArray<Real> &src,
+                              int il, int iu, int jl, int ju, int kl, int ku,
+                              int fil, int fjl, int fkl) {
 }
 
-
-//----------------------------------------------------------------------------------------
-//! \fn MGPeriodicOuterX2(AthenaArray<Real> &dst,Real time, int nvar,
-//                int is, int ie, int js, int je, int ks, int ke, int ngh,
-//                Real x0, Real y0, Real z0, Real dx, Real dy, Real dz)
-//  \brief Periodic (default) boundary condition in the outer-X2 direction
-
-void MGPeriodicOuterX2(AthenaArray<Real> &dst,Real time, int nvar,
-                       int is, int ie, int js, int je, int ks, int ke, int ngh,
-                       Real x0, Real y0, Real z0, Real dx, Real dy, Real dz) {
-  return;
-}
-
-
-//----------------------------------------------------------------------------------------
-//! \fn MGPeriodicInnerX3(AthenaArray<Real> &dst,Real time, int nvar,
-//                int is, int ie, int js, int je, int ks, int ke, int ngh,
-//                Real x0, Real y0, Real z0, Real dx, Real dy, Real dz)
-//  \brief Periodic (default) boundary condition in the inner-X3 direction
-
-void MGPeriodicInnerX3(AthenaArray<Real> &dst,Real time, int nvar,
-                       int is, int ie, int js, int je, int ks, int ke, int ngh,
-                       Real x0, Real y0, Real z0, Real dx, Real dy, Real dz) {
-  return;
-}
-
-
-//----------------------------------------------------------------------------------------
-//! \fn MGPeriodicOuterX3(AthenaArray<Real> &dst,Real time, int nvar,
-//                int is, int ie, int js, int je, int ks, int ke, int ngh,
-//                Real x0, Real y0, Real z0, Real dx, Real dy, Real dz)
-//  \brief Periodic (default) boundary condition in the outer-X3 direction
-
-void MGPeriodicOuterX3(AthenaArray<Real> &dst,Real time, int nvar,
-                       int is, int ie, int js, int je, int ks, int ke, int ngh,
-                       Real x0, Real y0, Real z0, Real dx, Real dy, Real dz) {
-  return;
-}
