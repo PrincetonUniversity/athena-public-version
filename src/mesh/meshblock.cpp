@@ -315,14 +315,17 @@ MeshBlock::MeshBlock(int igid, int ilid, Mesh *pm, ParameterInput *pin,
   }
   if (MAGNETIC_FIELDS_ENABLED) {
     std::memcpy(pfield->b.x1f.data(), &(mbdata[os]), pfield->b.x1f.GetSizeInBytes());
-    std::memcpy(pfield->b1.x1f.data(), &(mbdata[os]), pfield->b1.x1f.GetSizeInBytes());
     os += pfield->b.x1f.GetSizeInBytes();
+    std::memcpy(pfield->b1.x1f.data(), &(mbdata[os]), pfield->b1.x1f.GetSizeInBytes());
+    os += pfield->b1.x1f.GetSizeInBytes();
     std::memcpy(pfield->b.x2f.data(), &(mbdata[os]), pfield->b.x2f.GetSizeInBytes());
-    std::memcpy(pfield->b1.x2f.data(), &(mbdata[os]), pfield->b1.x2f.GetSizeInBytes());
     os += pfield->b.x2f.GetSizeInBytes();
+    std::memcpy(pfield->b1.x2f.data(), &(mbdata[os]), pfield->b1.x2f.GetSizeInBytes());
+    os += pfield->b1.x2f.GetSizeInBytes();
     std::memcpy(pfield->b.x3f.data(), &(mbdata[os]), pfield->b.x3f.GetSizeInBytes());
-    std::memcpy(pfield->b1.x3f.data(), &(mbdata[os]), pfield->b1.x3f.GetSizeInBytes());
     os += pfield->b.x3f.GetSizeInBytes();
+    std::memcpy(pfield->b1.x3f.data(), &(mbdata[os]), pfield->b1.x3f.GetSizeInBytes());
+    os += pfield->b1.x3f.GetSizeInBytes();
   }
 
   // (conserved variable) Passive scalars:
@@ -456,8 +459,10 @@ std::size_t MeshBlock::GetBlockSizeInBytes() {
     size += phydro->w1.GetSizeInBytes();
   }
   if (MAGNETIC_FIELDS_ENABLED)
-    size += (pfield->b.x1f.GetSizeInBytes() + pfield->b.x2f.GetSizeInBytes()
-             + pfield->b.x3f.GetSizeInBytes());
+    size +=
+      pfield->b.x1f.GetSizeInBytes() + pfield->b1.x1f.GetSizeInBytes() +
+      pfield->b.x2f.GetSizeInBytes() + pfield->b1.x2f.GetSizeInBytes() +
+      pfield->b.x3f.GetSizeInBytes() + pfield->b1.x3f.GetSizeInBytes();
   if (SELF_GRAVITY_ENABLED)
     size += pgrav->phi.GetSizeInBytes();
   if (NSCALARS > 0)

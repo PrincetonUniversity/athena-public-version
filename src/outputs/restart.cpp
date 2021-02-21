@@ -164,10 +164,16 @@ void RestartOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool force_wr
     if (MAGNETIC_FIELDS_ENABLED) {
       std::memcpy(pdata, pmb->pfield->b.x1f.data(), pmb->pfield->b.x1f.GetSizeInBytes());
       pdata += pmb->pfield->b.x1f.GetSizeInBytes();
+      std::memcpy(pdata, pmb->pfield->b1.x1f.data(), pmb->pfield->b1.x1f.GetSizeInBytes());
+      pdata += pmb->pfield->b1.x1f.GetSizeInBytes();
       std::memcpy(pdata, pmb->pfield->b.x2f.data(), pmb->pfield->b.x2f.GetSizeInBytes());
       pdata += pmb->pfield->b.x2f.GetSizeInBytes();
+      std::memcpy(pdata, pmb->pfield->b1.x2f.data(), pmb->pfield->b1.x2f.GetSizeInBytes());
+      pdata += pmb->pfield->b1.x2f.GetSizeInBytes();
       std::memcpy(pdata, pmb->pfield->b.x3f.data(), pmb->pfield->b.x3f.GetSizeInBytes());
       pdata += pmb->pfield->b.x3f.GetSizeInBytes();
+      std::memcpy(pdata, pmb->pfield->b1.x3f.data(), pmb->pfield->b1.x3f.GetSizeInBytes());
+      pdata += pmb->pfield->b1.x3f.GetSizeInBytes();
     }
 
     // (conserved variable) Passive scalars:
