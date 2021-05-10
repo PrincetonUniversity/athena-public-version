@@ -4,5 +4,9 @@ athena
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4455880.svg)](https://doi.org/10.5281/zenodo.4455880) <!-- v21.0, not Concept DOI that tracks the "latest" version (erroneously sorted by DOI creation date on Zenodo). 10.5281/zenodo.4455879 -->
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
-Athena++ radiation MHD code
+Athena++ GRMHD code and adaptive mesh refinement (AMR) framework
+
+(**2021-05-10**) We have opened the main repository to the public:
+
+https://github.com/PrincetonUniversity/athena
 
